@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Pipeline - RAG App</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-nav">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 11a9 9 0 0 1 9 9"></path>
+                    <path d="M4 4a16 16 0 0 1 16 16"></path>
+                    <circle cx="5" cy="19" r="1"></circle>
+                </svg>
+                <h1>RAG Ingest</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="tab-doc">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Document
+                </button>
+                <button class="nav-item" data-tab="tab-img">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    Image
+                </button>
+                <button class="nav-item" data-tab="tab-excel">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    Excel/CSV
+                </button>
+                <button class="nav-item" data-tab="tab-doclist">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14l2 2 4-4"></path></svg>
+                    Doctor List
+                </button>
+                <button class="nav-item" data-tab="tab-del">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Deletion Hub
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Tab 1: Document -->
+            <section id="tab-doc" class="tab-pane active fade-in">
+                <header class="tab-header">
+                    <h2>Document Upload (.txt, .docx)</h2>
+                    <p>Chunk and embed text files directly into ChromaDB Doc_store.</p>
+                </header>
+                <div class="content-box">
+                    <div class="upload-zone" id="doc-upload-zone">
+                        <input type="file" id="doc-file-input" accept=".txt, .docx" hidden>
+                        <div class="upload-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <h3>Upload File</h3>
+                        <p>Drag & drop or <span class="text-highlight">browse</span></p>
+                    </div>
+                    <button class="btn btn-primary mt-4 w-full" id="doc-submit-btn" disabled>Process Document</button>
+                    <div id="doc-status" class="status-msg"></div>
+                </div>
+            </section>
+
+            <!-- Tab 2: Image -->
+            <section id="tab-img" class="tab-pane fade-in">
+                <header class="tab-header">
+                    <h2>Image Upload (Rep Profiles)</h2>
+                    <p>Upload rep selfies at doctor clinics. File must be named after the doctor (e.g., <strong>Dr Sharma.jpeg</strong>).</p>
+                </header>
+                
+                <div class="split-layout">
+                    <!-- Left: Profile Mgt -->
+                    <div class="content-box">
+                        <h3>1. Profile Management</h3>
+                        <div class="input-group">
+                            <input type="text" id="new-profile-name" class="form-control" placeholder="New Profile Name">
+                            <button class="btn btn-secondary" id="create-profile-btn">Create</button>
+                        </div>
+                        <div class="mt-4">
+                            <label>Select Profile:</label>
+                            <div class="input-group mt-2">
+                                <select id="profile-select" class="form-control">
+                                    <option value="">-- Select Profile --</option>
+                                </select>
+                                <button class="btn btn-danger" id="delete-profile-btn">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Image Upload -->
+                    <div class="content-box flex-1">
+                        <h3>2. Upload Image for Profile</h3>
+                        <p class="upload-hint">File name must start with <strong>"Dr"</strong> (e.g., Dr Sharma.jpeg, Dr A Dr B.jpeg)</p>
+                        <div class="upload-zone" id="img-upload-zone" style="pointer-events: none; opacity: 0.5;">
+                            <input type="file" id="img-file-input" accept=".jpg, .jpeg, .png, .webp" multiple hidden>
+                            <div class="upload-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            </div>
+                            <h3>Upload Image(s), but not more than 14 at a time.</h3>
+                        </div>
+                        <div id="doctor-name-preview" class="doctor-preview hidden"></div>
+                        <button class="btn btn-primary mt-4 w-full" id="img-submit-btn" disabled>Process Image</button>
+                        <div id="img-status" class="status-msg mt-2"></div>
+                    </div>
+                </div>
+                
+                <!-- Thumbnails Array -->
+                <div class="content-box mt-4">
+                    <h3>3. Uploaded Images for <span id="current-profile-label">...</span></h3>
+                    <div class="thumbnail-grid" id="thumbnail-grid">
+                        <div class="empty-text">Select a profile to view images</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 3: Excel -->
+            <section id="tab-excel" class="tab-pane fade-in excel-layout">
+                <header class="tab-header excel-header">
+                    <div class="flex-row">
+                        <div>
+                            <h2>Excel / CSV Flow</h2>
+                            <p>Select tables visually to save to MySQL and ChromaDB Excel_store.</p>
+                        </div>
+                        <div class="header-actions">
+                            <div class="counter-badge">
+                                <span id="selection-counter">0</span> Tables Selected
+                            </div>
+                            <button id="excel-confirm-btn" class="btn btn-primary" disabled>
+                                Save to Database
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                
+                <div class="excel-workspace">
+                    <aside class="excel-sidebar">
+                        <div class="upload-zone" id="excel-upload-zone">
+                            <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" hidden>
+                            <div class="upload-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            </div>
+                            <p>Upload Excel/CSV</p>
+                        </div>
+                        <div class="sheets-panel hidden" id="sheets-panel">
+                            <h3>Sheets</h3>
+                            <ul id="sheets-list" class="sheets-list"></ul>
+                        </div>
+                        <div class="selections-panel hidden" id="selections-panel">
+                            <h3>Selected Tables</h3>
+                            <ul id="selections-list" class="sheets-list selections-list"></ul>
+                            <button class="btn btn-secondary btn-sm w-full mt-2" id="merge-tables-btn" style="display:none;" title="Merge selected tables into one. First table's name and headers are used.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path></svg>
+                                Merge Tables
+                            </button>
+                        </div>
+                    </aside>
+                    
+                    <section class="grid-container">
+                        <div class="grid-header hidden" id="grid-header">
+                            <div class="grid-header-row">
+                                <div>
+                                    <h2 id="current-sheet-name">Select a sheet</h2>
+                                    <p class="instructions">Drag across cells to select a table area.</p>
+                                </div>
+                                <div class="zoom-controls" id="zoom-controls">
+                                    <button class="btn-icon zoom-btn" id="zoom-out-btn" title="Zoom Out">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                                    </button>
+                                    <span class="zoom-level" id="zoom-level">100%</span>
+                                    <button class="btn-icon zoom-btn" id="zoom-in-btn" title="Zoom In">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                                    </button>
+                                    <button class="btn-icon zoom-btn" id="zoom-reset-btn" title="Reset Zoom">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-wrapper" id="table-wrapper">
+                            <div class="empty-state" id="empty-state">
+                                <p>Upload file to view data and select tables</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <!-- Tab 4: Doctor List -->
+            <section id="tab-doclist" class="tab-pane fade-in excel-layout">
+                <header class="tab-header excel-header">
+                    <div class="flex-row">
+                        <div>
+                            <h2>Doctor Working List</h2>
+                            <p>Upload the rep's working list (Excel/CSV). Select the doctor name column to save.</p>
+                        </div>
+                        <div class="header-actions">
+                            <div class="doclist-profile-bar">
+                                <label>Profile:</label>
+                                <select id="dl-profile-select" class="form-control" style="width:auto;">
+                                    <option value="">-- Select Profile --</option>
+                                </select>
+                            </div>
+                            <button id="dl-save-btn" class="btn btn-primary" disabled>
+                                Save Doctor List
+                            </button>
+                        </div>
+                    </div>
+                    <div id="dl-info" class="doclist-info hidden" style="margin-top:0.5rem;">
+                        <span id="dl-count">0</span> doctors loaded
+                        <span class="doclist-updated" id="dl-updated"></span>
+                    </div>
+                </header>
+
+                <div class="excel-workspace">
+                    <aside class="excel-sidebar">
+                        <div class="upload-zone" id="dl-upload-zone" style="pointer-events:none;opacity:0.5;">
+                            <input type="file" id="dl-file-input" accept=".xlsx, .xls, .csv" hidden>
+                            <div class="upload-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            </div>
+                            <p>Upload Excel/CSV</p>
+                        </div>
+                        <div class="sheets-panel hidden" id="dl-sheets-panel">
+                            <h3>Sheets</h3>
+                            <ul id="dl-sheets-list" class="sheets-list"></ul>
+                        </div>
+                        <div class="selections-panel hidden" id="dl-selections-panel">
+                            <h3>Selected Column</h3>
+                            <div id="dl-selection-info" class="dl-selection-info"></div>
+                        </div>
+                    </aside>
+
+                    <section class="grid-container">
+                        <div class="grid-header hidden" id="dl-grid-header">
+                            <div class="grid-header-row">
+                                <div>
+                                    <h2 id="dl-current-sheet-name">Select a sheet</h2>
+                                    <p class="instructions">Drag across cells to select the doctor name column.</p>
+                                </div>
+                                <div class="zoom-controls" id="dl-zoom-controls">
+                                    <button class="btn-icon zoom-btn" id="dl-zoom-out-btn" title="Zoom Out">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                                    </button>
+                                    <span class="zoom-level" id="dl-zoom-level">100%</span>
+                                    <button class="btn-icon zoom-btn" id="dl-zoom-in-btn" title="Zoom In">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                                    </button>
+                                    <button class="btn-icon zoom-btn" id="dl-zoom-reset-btn" title="Reset Zoom">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-wrapper" id="dl-table-wrapper">
+                            <div class="empty-state" id="dl-empty-state">
+                                <p>Select a profile, then upload an Excel/CSV file to view and select doctor names</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <!-- Tab 5: Deletion -->
+            <section id="tab-del" class="tab-pane fade-in">
+                <header class="tab-header">
+                    <h2>Deletion Hub</h2>
+                    <p>Remove embedded items from Chroma collections.</p>
+                </header>
+                
+                <div class="del-tabs-nav mb-4">
+                    <button class="del-tab-btn active" data-target="del-docs-pane">Doc_store</button>
+                    <button class="del-tab-btn" data-target="del-imgs-pane">Image_store</button>
+                    <button class="del-tab-btn" data-target="del-tables-pane">Excel_store</button>
+                </div>
+
+                <div class="del-tab-content">
+                    <!-- Docs Column -->
+                    <div id="del-docs-pane" class="del-pane active content-box">
+                        <div class="flex-row mb-4">
+                            <h3>Doc_store</h3>
+                            <button class="btn btn-secondary btn-sm" id="fetch-docs-btn">Refresh</button>
+                        </div>
+                        <ul class="del-list" id="del-docs-list"></ul>
+                    </div>
+                    
+                    <!-- Images Column -->
+                    <div id="del-imgs-pane" class="del-pane content-box">
+                        <div class="flex-row mb-4">
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <h3>Image_store</h3>
+                                <select id="del-profile-select" class="form-control" style="width: auto; padding: 0.3rem; font-size: 0.85rem;">
+                                    <option value="">-- All Profiles --</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" id="fetch-imgs-btn">Refresh</button>
+                        </div>
+                        <div class="del-list" id="del-imgs-list"></div>
+                    </div>
+                    
+                    <!-- Tables Column -->
+                    <div id="del-tables-pane" class="del-pane content-box">
+                        <div class="flex-row mb-4">
+                            <h3>Excel_store</h3>
+                            <button class="btn btn-secondary btn-sm" id="fetch-tables-btn">Refresh</button>
+                        </div>
+                        <ul class="del-list" id="del-tables-list"></ul>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+        
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p id="loading-msg">Processing...</p>
+        </div>
+        
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Table Details Modal -->
+    <div id="table-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Configure Table</h2>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-row">
+                    <div class="form-group flex-1">
+                        <label for="table-name">Database Table Name</label>
+                        <input type="text" id="table-name" placeholder="e.g., sales_data" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Selected Range</label>
+                        <p id="selected-range-display" class="range-display">A1:D10</p>
+                    </div>
+                </div>
+                <div class="form-group modal-editor-group">
+                    <div class="editor-toolbar">
+                        <label>Data Preview & Edit <small>(First row = headers)</small></label>
+                        <div class="editor-actions">
+                            <button class="btn-icon" id="add-row-btn" title="Add Row">+ Row</button>
+                            <button class="btn-icon" id="add-col-btn" title="Add Column">+ Col</button>
+                        </div>
+                    </div>
+                    <div class="modal-table-container" id="modal-table-container"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-table-btn">Cancel</button>
+                <button class="btn btn-primary" id="save-table-cfg-btn">Add to Selection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal (only shown via Cloudflare Tunnel, never on localhost) -->
+    <div id="login-modal" class="hidden">
+        <style>
+            #login-modal {
+                position: fixed; inset: 0; z-index: 9999;
+                display: flex; align-items: center; justify-content: center;
+                background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            }
+            #login-modal.hidden { display: none; }
+            .login-box {
+                background: var(--bg-card, #1e1e2e); border-radius: 16px;
+                padding: 2.5rem; width: 380px; max-width: 90vw;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                text-align: center;
+            }
+            .login-box h2 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+            .login-box p { margin: 0 0 1.5rem; opacity: 0.6; font-size: 0.9rem; }
+            .login-box input {
+                width: 100%; padding: 0.75rem 1rem; border-radius: 8px;
+                border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05);
+                color: inherit; font-size: 1rem; margin-bottom: 1rem;
+                outline: none; transition: border-color 0.2s;
+            }
+            .login-box input:focus { border-color: var(--accent-color, #6b8e3a); }
+            .login-box button {
+                width: 100%; padding: 0.75rem; border-radius: 8px; border: none;
+                background: var(--accent-color, #6b8e3a); color: #fff;
+                font-size: 1rem; font-weight: 600; cursor: pointer;
+                transition: opacity 0.2s;
+            }
+            .login-box button:hover { opacity: 0.85; }
+        </style>
+        <div class="login-box">
+            <h2>🔒 Access Required</h2>
+            <p>Enter your access token to continue.</p>
+            <input type="password" id="login-token-input" placeholder="Paste access token..." autocomplete="off">
+            <button id="login-submit-btn">Unlock</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

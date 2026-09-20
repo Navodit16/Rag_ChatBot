@@ -1,0 +1,7 @@
+# No additional packages required beyond what is already installed in backend/venv.
+# The following are already present in the venv:
+#   fastapi, uvicorn, requests, sqlalchemy, pymysql, chromadb, pydantic
+#
+# If chromadb's SentenceTransformerEmbeddingFunction requires sentence-transformers
+# and it isn't already installed, run:
+#   pip install sentence-transformers

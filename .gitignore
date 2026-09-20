@@ -1,0 +1,13 @@
+.env
+*.env
+__pycache__/
+chroma_data/
+profiles/
+history.json
+*.pyc
+.pytest_cache/
+backend 
+frontend 
+rag_app
+output\_fix_quotes.py
+input\technical_spec.txt
