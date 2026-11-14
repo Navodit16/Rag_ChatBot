@@ -9,5 +9,6 @@ history.json
 backend 
 frontend 
 rag_app
-output\_fix_quotes.py
-input\technical_spec.txt
+output/_fix_quotes.py
+input/technical_spec.txt
+output/README.md
